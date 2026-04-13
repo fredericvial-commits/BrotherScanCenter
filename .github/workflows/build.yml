@@ -18,28 +18,23 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Verifier tous les fichiers
+      - name: Verifier fichiers
         run: |
-          echo "=== STRUCTURE COMPLETE ==="
-          dir /s /b
-          echo.
-          echo "=== VERIFICATION FICHIERS OBLIGATOIRES ==="
-          if exist "BrotherScanCenter\main.py" (echo OK main.py) else (echo MANQUANT main.py)
-          if exist "BrotherScanCenter\bootstrap.py" (echo OK bootstrap.py) else (echo MANQUANT bootstrap.py)
-          if exist "BrotherScanCenter\config_manager.py" (echo OK config_manager.py) else (echo MANQUANT config_manager.py)
-          if exist "BrotherScanCenter\generate_icon.py" (echo OK generate_icon.py) else (echo MANQUANT generate_icon.py)
-          if exist "BrotherScanCenter\build.py" (echo OK build.py) else (echo MANQUANT build.py)
-          if exist "BrotherScanCenter\core\scanner.py" (echo OK core\scanner.py) else (echo MANQUANT core\scanner.py)
-          if exist "BrotherScanCenter\core\email_sender.py" (echo OK core\email_sender.py) else (echo MANQUANT core\email_sender.py)
-          if exist "BrotherScanCenter\core\file_watcher.py" (echo OK core\file_watcher.py) else (echo MANQUANT core\file_watcher.py)
-          if exist "BrotherScanCenter\core\network_discovery.py" (echo OK core\network_discovery.py) else (echo MANQUANT core\network_discovery.py)
-          if exist "BrotherScanCenter\core\__init__.py" (echo OK core\__init__.py) else (echo MANQUANT core\__init__.py)
-          if exist "BrotherScanCenter\ui\main_window.py" (echo OK ui\main_window.py) else (echo MANQUANT ui\main_window.py)
-          if exist "BrotherScanCenter\ui\setup_wizard_ui.py" (echo OK ui\setup_wizard_ui.py) else (echo MANQUANT ui\setup_wizard_ui.py)
-          if exist "BrotherScanCenter\ui\tray.py" (echo OK ui\tray.py) else (echo MANQUANT ui\tray.py)
-          if exist "BrotherScanCenter\ui\__init__.py" (echo OK ui\__init__.py) else (echo MANQUANT ui\__init__.py)
-          if exist "BrotherScanCenter\assets\icon.ico" (echo OK assets\icon.ico) else (echo MANQUANT assets\icon.ico)
+          echo "=== FICHIERS ==="
+          if exist "bootstrap.py" (echo OK bootstrap.py) else (echo MANQUANT bootstrap.py)
+          if exist "config_manager.py" (echo OK config_manager.py) else (echo MANQUANT config_manager.py)
+          if exist "generate_icon.py" (echo OK generate_icon.py) else (echo MANQUANT generate_icon.py)
+          if exist "main.py" (echo OK main.py) else (echo MANQUANT main.py)
+          if exist "core\scanner.py" (echo OK core\scanner.py) else (echo MANQUANT core\scanner.py)
+          if exist "core\email_sender.py" (echo OK core\email_sender.py) else (echo MANQUANT core\email_sender.py)
+          if exist "core\file_watcher.py" (echo OK core\file_watcher.py) else (echo MANQUANT core\file_watcher.py)
+          if exist "core\network_discovery.py" (echo OK core\network_discovery.py) else (echo MANQUANT core\network_discovery.py)
+          if exist "ui\main_window.py" (echo OK ui\main_window.py) else (echo MANQUANT ui\main_window.py)
+          if exist "ui\setup_wizard_ui.py" (echo OK ui\setup_wizard_ui.py) else (echo MANQUANT ui\setup_wizard_ui.py)
+          if exist "ui\tray.py" (echo OK ui\tray.py) else (echo MANQUANT ui\tray.py)
+          if exist "assets\icon.ico" (echo OK assets\icon.ico) else (echo MANQUANT assets\icon.ico)
         shell: cmd
+        working-directory: ${{ github.workspace }}
 
       - name: Installer dependances
         run: |
@@ -49,23 +44,15 @@ jobs:
 
       - name: Compiler
         run: |
-          cd /d "%GITHUB_WORKSPACE%\BrotherScanCenter"
-          echo "Dossier courant :"
-          cd
           python generate_icon.py
           pyinstaller --onefile --windowed --name=BrotherScanCenter --icon=assets\icon.ico --add-data="assets;assets" --hidden-import=win32api --hidden-import=win32con --hidden-import=win32gui --hidden-import=pystray --hidden-import=PIL._tkinter_finder --hidden-import=cryptography --hidden-import=watchdog.observers.winapi --collect-all=pystray --collect-all=cryptography main.py
         shell: cmd
-
-      - name: Verifier exe
-        run: |
-          dir /s /b BrotherScanCenter.exe
-        shell: cmd
+        working-directory: ${{ github.workspace }}
 
       - name: Upload exe
         uses: actions/upload-artifact@v4
         with:
           name: BrotherScanCenter-Windows
-          path: |
-            **/dist/BrotherScanCenter.exe
+          path: dist\BrotherScanCenter.exe
           if-no-files-found: warn
           retention-days: 30
