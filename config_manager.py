@@ -1,31 +1,61 @@
-import json, os, base64
+import json
+import os
+import base64
+import copy
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
-CONFIG_PATH = os.path.join(os.environ.get("APPDATA", "."),
-    "BrotherScanCenter", "config.json")
-KEY_PATH = os.path.join(os.environ.get("APPDATA", "."),
-    "BrotherScanCenter", "key.bin")
+CONFIG_PATH = os.path.join(
+    os.environ.get("APPDATA", "."),
+    "BrotherScanCenter", "config.json"
+)
+KEY_PATH = os.path.join(
+    os.environ.get("APPDATA", "."),
+    "BrotherScanCenter", "key.bin"
+)
 
 DEFAULT_CONFIG = {
-    "smtp":    {"server": "smtp.gmail.com", "port": 587,
-                "email": "", "app_password": ""},
-    "scanner": {"ip": "", "model": "DCP-9020CDW",
-                "format": "PDF", "resolution": 300},
-    "nas":     {"ip": "", "partage": "Scans_Brother",
-                "user": "", "password": "", "protocol": "CIFS"},
-    "storage": {"scan_folder": "", "archive_folder": "",
-                "keep_local": True},
+    "smtp": {
+        "server": "smtp.gmail.com",
+        "port": 587,
+        "email": "",
+        "app_password": ""
+    },
+    "scanner": {
+        "ip": "",
+        "model": "DCP-9020CDW",
+        "format": "PDF",
+        "resolution": 300
+    },
+    "nas": {
+        "ip": "",
+        "partage": "Scans_Brother",
+        "user": "",
+        "password": "",
+        "protocol": "CIFS"
+    },
+    "storage": {
+        "scan_folder": "",
+        "archive_folder": "",
+        "keep_local": True
+    },
     "email_destinations": [],
-    "notifications": {"show_popup": True, "sound": True},
-    "app": {"first_run": True, "auto_start": True}
+    "notifications": {
+        "show_popup": True,
+        "sound": True
+    },
+    "app": {
+        "first_run": True,
+        "auto_start": True
+    }
 }
+
 
 class ConfigManager:
     def __init__(self):
         os.makedirs(os.path.dirname(CONFIG_PATH), exist_ok=True)
-        self.key    = self._get_or_create_key()
+        self.key = self._get_or_create_key()
         self.fernet = Fernet(self.key)
         self.config = self._charger()
 
@@ -34,46 +64,49 @@ class ConfigManager:
             with open(KEY_PATH, "rb") as f:
                 return f.read()
         machine_id = os.environ.get("COMPUTERNAME", "default").encode()
-        kdf = PBKDF2HMAC(algorithm=hashes.SHA256(),
-            length=32, salt=b"BrotherSC_2024", iterations=100000)
+        kdf = PBKDF2HMAC(
+            algorithm=hashes.SHA256(),
+            length=32,
+            salt=b"BrotherSC_2024",
+            iterations=100000
+        )
         key = base64.urlsafe_b64encode(kdf.derive(machine_id))
         with open(KEY_PATH, "wb") as f:
             f.write(key)
         return key
 
-    def _chiffrer(self, v):
-        return self.fernet.encrypt(v.encode()).decode()
+    def _chiffrer(self, valeur):
+        return self.fernet.encrypt(valeur.encode()).decode()
 
-    def _dechiffrer(self, v):
+    def _dechiffrer(self, valeur):
         try:
-            return self.fernet.decrypt(v.encode()).decode()
-        except:
-            return v
+            return self.fernet.decrypt(valeur.encode()).decode()
+        except Exception:
+            return valeur
 
     def _champs_sensibles(self):
-        return [("smtp","app_password"), ("nas","password")]
+        return [("smtp", "app_password"), ("nas", "password")]
 
     def _charger(self):
         if not os.path.exists(CONFIG_PATH):
-            return dict(DEFAULT_CONFIG)
+            return copy.deepcopy(DEFAULT_CONFIG)
         with open(CONFIG_PATH) as f:
             data = json.load(f)
         for s, c in self._champs_sensibles():
             try:
                 data[s][c] = self._dechiffrer(data[s][c])
-            except:
+            except Exception:
                 pass
         return data
 
     def sauvegarder(self, config):
         self.config = config
-        import copy
         data = copy.deepcopy(config)
         for s, c in self._champs_sensibles():
             try:
                 if data[s][c]:
                     data[s][c] = self._chiffrer(data[s][c])
-            except:
+            except Exception:
                 pass
         with open(CONFIG_PATH, "w") as f:
             json.dump(data, f, indent=2)
@@ -85,7 +118,7 @@ class ConfigManager:
                 d = d.get(k, {})
             else:
                 return default
-        return d if d = {} else default
+        return d if d != {} else default
 
     def set(self, valeur, *keys):
         d = self.config
