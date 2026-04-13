@@ -45,9 +45,14 @@ jobs:
       - name: Compiler
         run: |
           python generate_icon.py
-          pyinstaller --onefile --windowed --name=BrotherScanCenter --icon=assets\icon.ico --add-data="assets;assets" --hidden-import=win32api --hidden-import=win32con --hidden-import=win32gui --hidden-import=pystray --hidden-import=PIL._tkinter_finder --hidden-import=cryptography --hidden-import=watchdog.observers.winapi --collect-all=pystray --collect-all=cryptography main.py
+          pyinstaller --onefile --windowed --name=BrotherScanCenter --icon=assets\icon.ico --add-data="assets;assets" --add-data="bootstrap.py;." --add-data="config_manager.py;." --add-data="core;core" --add-data="ui;ui" --hidden-import=win32api --hidden-import=win32con --hidden-import=win32gui --hidden-import=pystray --hidden-import=PIL._tkinter_finder --hidden-import=cryptography --hidden-import=watchdog.observers.winapi --collect-all=pystray --collect-all=cryptography --paths=. main.py
         shell: cmd
         working-directory: ${{ github.workspace }}
+
+      - name: Verifier exe
+        run: |
+          dir /s /b BrotherScanCenter.exe
+        shell: cmd
 
       - name: Upload exe
         uses: actions/upload-artifact@v4
