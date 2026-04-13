@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 import threading
+import time
 
 class SplashScreen(tk.Tk):
     def __init__(self):
@@ -22,58 +23,33 @@ class SplashScreen(tk.Tk):
         self.geometry(f"520x300+{x}+{y}")
 
     def _build(self):
-        tk.Label(
-            self,
-            text="Brother Scan Center",
+        tk.Label(self, text="Brother Scan Center",
             font=("Segoe UI", 18, "bold"),
-            bg="#003087",
-            fg="white"
-        ).pack(pady=(30, 5))
-
-        tk.Label(
-            self,
-            text="DCP-9020CDW",
+            bg="#003087", fg="white").pack(pady=(30, 5))
+        tk.Label(self, text="DCP-9020CDW",
             font=("Segoe UI", 10),
-            bg="#003087",
-            fg="#a0c4ff"
-        ).pack()
-
+            bg="#003087", fg="#a0c4ff").pack()
         self.card = tk.Frame(self, bg="#f0f4f8", padx=15, pady=10)
         self.card.pack(fill="x", padx=25, pady=15)
-
-        self.status = tk.Label(
-            self.card,
-            text="Chargement...",
+        self.status = tk.Label(self.card, text="Chargement...",
             font=("Segoe UI", 10, "bold"),
-            bg="#f0f4f8",
-            fg="#003087"
-        )
+            bg="#f0f4f8", fg="#003087")
         self.status.pack(anchor="w")
-
-        self.bar = ttk.Progressbar(
-            self.card,
-            mode="indeterminate",
-            length=460
-        )
+        self.bar = ttk.Progressbar(self.card,
+            mode="indeterminate", length=460)
         self.bar.pack(fill="x", pady=10)
         self.bar.start(10)
-
-        tk.Label(
-            self,
-            text="v1.0.0",
+        tk.Label(self, text="v1.0.0",
             font=("Segoe UI", 8),
-            bg="#003087",
-            fg="#6c9fd4"
-        ).pack(side="bottom", pady=5)
+            bg="#003087", fg="#6c9fd4").pack(side="bottom", pady=5)
 
     def _lancer(self):
         threading.Thread(target=self._charger, daemon=True).start()
 
     def _charger(self):
-        import time
         self.status.config(text="Initialisation...")
         time.sleep(1)
-        self.status.config(text="Chargement des modules...")
+        self.status.config(text="Chargement modules...")
         time.sleep(1)
         self.status.config(text="Pret !")
         self.succes = True
