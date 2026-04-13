@@ -22,7 +22,7 @@ class BrotherScanCenter(tk.Tk):
         self.title("Brother Scan Center")
         self.geometry("950x660")
         self.configure(bg="#f0f4f8")
-        self.protocol("WM_DELETE_WINDOW", self.iconify)
+        self.protocol("WM_DELETE_WINDOW", self._quitter)
         self._build()
         self.after(500, self.verifier_imprimante)
 
@@ -47,11 +47,13 @@ class BrotherScanCenter(tk.Tk):
         hdr = tk.Frame(self, bg="#003087", height=65)
         hdr.pack(fill="x")
         hdr.pack_propagate(False)
+
         tk.Label(
             hdr, text="Brother Scan Center",
             font=("Segoe UI", 18, "bold"),
             bg="#003087", fg="white"
         ).pack(side="left", padx=20, pady=12)
+
         self.lbl_printer = tk.Label(
             hdr, text="",
             font=("Segoe UI", 9),
@@ -84,6 +86,25 @@ class BrotherScanCenter(tk.Tk):
             bg="#003087", fg="white",
             anchor="w", padx=10
         ).pack(fill="x", side="bottom")
+
+    def _quitter(self):
+        reponse = messagebox.askyesnocancel(
+            "Brother Scan Center",
+            "Que voulez-vous faire ?\n\n"
+            "OUI      → Reduire dans la barre des taches\n"
+            "NON      → Quitter completement\n"
+            "ANNULER  → Rester ouvert"
+        )
+        if reponse is True:
+            self.iconify()
+        elif reponse is False:
+            if hasattr(self, 'watcher'):
+                self.watcher.arreter()
+            self.quit()
+            self.destroy()
+
+    def _minimiser(self):
+        self.iconify()
 
     def _label_entry(self, parent, label, val, row,
                      secret=False, width=35):
@@ -177,13 +198,16 @@ class BrotherScanCenter(tk.Tk):
             for d in dests
         ]
         self.dest_var = tk.StringVar()
-        cb = ttk.Combobox(
+        self.dest_combo = ttk.Combobox(
             of, textvariable=self.dest_var,
             values=vals, width=32
         )
-        cb.grid(row=1, column=1, columnspan=3, sticky="w", padx=8)
+        self.dest_combo.grid(
+            row=1, column=1, columnspan=3,
+            sticky="w", padx=8
+        )
         if vals:
-            cb.current(0)
+            self.dest_combo.current(0)
 
         bf = tk.Frame(f, bg="#f0f4f8")
         bf.pack(pady=15)
@@ -343,10 +367,14 @@ class BrotherScanCenter(tk.Tk):
         nas = self.cfg.config.get("nas", {})
         self.nas_vars = {}
         champs = [
-            ("IP du NAS",       "ip",       nas.get("ip", "")),
-            ("Dossier partage", "partage",  nas.get("partage", "Scans_Brother")),
-            ("Utilisateur",     "user",     nas.get("user", "")),
-            ("Mot de passe",    "password", nas.get("password", "")),
+            ("IP du NAS",       "ip",
+             nas.get("ip", "")),
+            ("Dossier partage", "partage",
+             nas.get("partage", "Scans_Brother")),
+            ("Utilisateur",     "user",
+             nas.get("user", "")),
+            ("Mot de passe",    "password",
+             nas.get("password", "")),
         ]
         for i, (label, cle, val) in enumerate(champs):
             self.nas_vars[cle] = self._label_entry(
@@ -400,7 +428,8 @@ class BrotherScanCenter(tk.Tk):
             tk.Button(
                 card, text="...",
                 command=lambda k=cle: self.st_vars[k].set(
-                    filedialog.askdirectory() or self.st_vars[k].get()
+                    filedialog.askdirectory()
+                    or self.st_vars[k].get()
                 ),
                 bg="#6c757d", fg="white", relief="flat"
             ).grid(row=i, column=2)
@@ -414,7 +443,8 @@ class BrotherScanCenter(tk.Tk):
             variable=self.keep_var,
             bg="#f0f4f8",
             font=("Segoe UI", 10)
-        ).grid(row=2, column=0, columnspan=3, sticky="w", pady=8)
+        ).grid(row=2, column=0, columnspan=3,
+               sticky="w", pady=8)
 
         tk.Button(
             f, text="Sauvegarder",
@@ -602,6 +632,15 @@ class BrotherScanCenter(tk.Tk):
             )
             self.new_email.set("")
             self.new_nom.set("")
+            self._save_dests()
+            # Mettre à jour le combobox
+            dests = []
+            for item in self.dest_tree.get_children():
+                e, n = self.dest_tree.item(item)["values"]
+                dests.append(e)
+            self.dest_combo["values"] = dests
+            if dests:
+                self.dest_combo.current(0)
 
     def _suppr_dest(self):
         for item in self.dest_tree.selection():
@@ -620,7 +659,9 @@ class BrotherScanCenter(tk.Tk):
     def _ajouter_hist(self, fichier, dest, statut):
         date = datetime.now().strftime("%d/%m/%Y %H:%M")
         nom = os.path.basename(fichier)
-        tag = "ok" if statut in ("Envoye", "Sauvegarde") else "err"
+        tag = "ok" if statut in (
+            "Envoye", "Sauvegarde"
+        ) else "err"
         self.tree.insert(
             "", 0,
             values=(date, nom, dest, statut),
@@ -628,7 +669,9 @@ class BrotherScanCenter(tk.Tk):
         )
 
     def _effacer_hist(self):
-        if messagebox.askyesno("Confirmer", "Effacer l historique ?"):
+        if messagebox.askyesno(
+            "Confirmer", "Effacer l historique ?"
+        ):
             for i in self.tree.get_children():
                 self.tree.delete(i)
 
