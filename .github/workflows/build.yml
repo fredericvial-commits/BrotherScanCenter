@@ -24,57 +24,117 @@ jobs:
           pip install Pillow pyinstaller cryptography watchdog pystray pywin32 requests psutil packaging
         shell: cmd
 
+      - name: Verifier presence fichiers
+        run: |
+          echo === VERIFICATION PRESENCE ===
+          if exist "main.py" (echo OK main.py) else (echo MANQUANT main.py && exit 1)
+          if exist "bootstrap.py" (echo OK bootstrap.py) else (echo MANQUANT bootstrap.py && exit 1)
+          if exist "config_manager.py" (echo OK config_manager.py) else (echo MANQUANT config_manager.py && exit 1)
+          if exist "generate_icon.py" (echo OK generate_icon.py) else (echo MANQUANT generate_icon.py && exit 1)
+          if exist "core\__init__.py" (echo OK core\__init__.py) else (echo MANQUANT core\__init__.py && exit 1)
+          if exist "core\scanner.py" (echo OK core\scanner.py) else (echo MANQUANT core\scanner.py && exit 1)
+          if exist "core\email_sender.py" (echo OK core\email_sender.py) else (echo MANQUANT core\email_sender.py && exit 1)
+          if exist "core\file_watcher.py" (echo OK core\file_watcher.py) else (echo MANQUANT core\file_watcher.py && exit 1)
+          if exist "core\network_discovery.py" (echo OK core\network_discovery.py) else (echo MANQUANT core\network_discovery.py && exit 1)
+          if exist "ui\__init__.py" (echo OK ui\__init__.py) else (echo MANQUANT ui\__init__.py && exit 1)
+          if exist "ui\main_window.py" (echo OK ui\main_window.py) else (echo MANQUANT ui\main_window.py && exit 1)
+          if exist "ui\setup_wizard_ui.py" (echo OK ui\setup_wizard_ui.py) else (echo MANQUANT ui\setup_wizard_ui.py && exit 1)
+          if exist "ui\tray.py" (echo OK ui\tray.py) else (echo MANQUANT ui\tray.py && exit 1)
+        shell: cmd
+        working-directory: ${{ github.workspace }}
+
       - name: Valider syntaxe Python
         run: |
-          echo "Validation syntaxe..."
-          python -m py_compile main.py && echo OK main.py || echo ERREUR main.py
-          python -m py_compile bootstrap.py && echo OK bootstrap.py || echo ERREUR bootstrap.py
-          python -m py_compile config_manager.py && echo OK config_manager.py || echo ERREUR config_manager.py
-          python -m py_compile generate_icon.py && echo OK generate_icon.py || echo ERREUR generate_icon.py
-          python -m py_compile core\scanner.py && echo OK core\scanner.py || echo ERREUR core\scanner.py
-          python -m py_compile core\email_sender.py && echo OK core\email_sender.py || echo ERREUR core\email_sender.py
-          python -m py_compile core\file_watcher.py && echo OK core\file_watcher.py || echo ERREUR core\file_watcher.py
-          python -m py_compile core\network_discovery.py && echo OK core\network_discovery.py || echo ERREUR core\network_discovery.py
-          python -m py_compile ui\main_window.py && echo OK ui\main_window.py || echo ERREUR ui\main_window.py
-          python -m py_compile ui\setup_wizard_ui.py && echo OK ui\setup_wizard_ui.py || echo ERREUR ui\setup_wizard_ui.py
-          python -m py_compile ui\tray.py && echo OK ui\tray.py || echo ERREUR ui\tray.py
+          echo === VALIDATION SYNTAXE ===
+          python -m py_compile main.py
+          echo OK main.py
+          python -m py_compile bootstrap.py
+          echo OK bootstrap.py
+          python -m py_compile config_manager.py
+          echo OK config_manager.py
+          python -m py_compile generate_icon.py
+          echo OK generate_icon.py
+          python -m py_compile core\__init__.py
+          echo OK core\__init__.py
+          python -m py_compile core\scanner.py
+          echo OK core\scanner.py
+          python -m py_compile core\email_sender.py
+          echo OK core\email_sender.py
+          python -m py_compile core\file_watcher.py
+          echo OK core\file_watcher.py
+          python -m py_compile core\network_discovery.py
+          echo OK core\network_discovery.py
+          python -m py_compile ui\__init__.py
+          echo OK ui\__init__.py
+          python -m py_compile ui\main_window.py
+          echo OK ui\main_window.py
+          python -m py_compile ui\setup_wizard_ui.py
+          echo OK ui\setup_wizard_ui.py
+          python -m py_compile ui\tray.py
+          echo OK ui\tray.py
+          echo === SYNTAXE OK ===
         shell: cmd
         working-directory: ${{ github.workspace }}
 
-      - name: Verifier fichiers
+      - name: Tester imports
         run: |
-          echo "=== FICHIERS ==="
-          if exist "bootstrap.py" (echo OK bootstrap.py) else (echo MANQUANT bootstrap.py)
-          if exist "config_manager.py" (echo OK config_manager.py) else (echo MANQUANT config_manager.py)
-          if exist "generate_icon.py" (echo OK generate_icon.py) else (echo MANQUANT generate_icon.py)
-          if exist "main.py" (echo OK main.py) else (echo MANQUANT main.py)
-          if exist "core\scanner.py" (echo OK core\scanner.py) else (echo MANQUANT core\scanner.py)
-          if exist "core\email_sender.py" (echo OK core\email_sender.py) else (echo MANQUANT core\email_sender.py)
-          if exist "core\file_watcher.py" (echo OK core\file_watcher.py) else (echo MANQUANT core\file_watcher.py)
-          if exist "core\network_discovery.py" (echo OK core\network_discovery.py) else (echo MANQUANT core\network_discovery.py)
-          if exist "ui\main_window.py" (echo OK ui\main_window.py) else (echo MANQUANT ui\main_window.py)
-          if exist "ui\setup_wizard_ui.py" (echo OK ui\setup_wizard_ui.py) else (echo MANQUANT ui\setup_wizard_ui.py)
-          if exist "ui\tray.py" (echo OK ui\tray.py) else (echo MANQUANT ui\tray.py)
-          if exist "assets\icon.ico" (echo OK assets\icon.ico) else (echo MANQUANT assets\icon.ico)
+          echo === TEST IMPORTS ===
+          python -c "from config_manager import ConfigManager; print('OK config_manager')"
+          python -c "from bootstrap import SplashScreen; print('OK bootstrap')"
+          python -c "from core.scanner import BrotherScanner; print('OK core.scanner')"
+          python -c "from core.email_sender import EmailSender; print('OK core.email_sender')"
+          python -c "from core.file_watcher import FileWatcher; print('OK core.file_watcher')"
+          python -c "from core.network_discovery import NetworkDiscovery; print('OK core.network_discovery')"
+          echo === IMPORTS OK ===
         shell: cmd
         working-directory: ${{ github.workspace }}
 
-      - name: Compiler
+      - name: Generer icone
         run: |
           python generate_icon.py
-          pyinstaller --onefile --windowed --name=BrotherScanCenter --icon=assets\icon.ico --add-data="assets;assets" --add-data="bootstrap.py;." --add-data="config_manager.py;." --add-data="core;core" --add-data="ui;ui" --hidden-import=win32api --hidden-import=win32con --hidden-import=win32gui --hidden-import=pystray --hidden-import=PIL._tkinter_finder --hidden-import=cryptography --hidden-import=watchdog.observers.winapi --collect-all=pystray --collect-all=cryptography --paths=. main.py
+          if exist "assets\icon.ico" (echo OK icone generee) else (echo ERREUR icone manquante && exit 1)
         shell: cmd
         working-directory: ${{ github.workspace }}
 
-      - name: Verifier exe
+      - name: Compiler exe
         run: |
-          dir /s /b BrotherScanCenter.exe
+          pyinstaller --onefile --windowed --name=BrotherScanCenter ^
+            --icon=assets\icon.ico ^
+            --add-data="assets;assets" ^
+            --add-data="bootstrap.py;." ^
+            --add-data="config_manager.py;." ^
+            --add-data="core;core" ^
+            --add-data="ui;ui" ^
+            --hidden-import=win32api ^
+            --hidden-import=win32con ^
+            --hidden-import=win32gui ^
+            --hidden-import=pystray ^
+            --hidden-import=PIL._tkinter_finder ^
+            --hidden-import=cryptography ^
+            --hidden-import=watchdog.observers.winapi ^
+            --collect-all=pystray ^
+            --collect-all=cryptography ^
+            --paths=. ^
+            main.py
         shell: cmd
+        working-directory: ${{ github.workspace }}
+
+      - name: Verifier exe genere
+        run: |
+          if exist "dist\BrotherScanCenter.exe" (
+            echo OK exe genere
+            dir dist\BrotherScanCenter.exe
+          ) else (
+            echo ERREUR exe non genere
+            exit 1
+          )
+        shell: cmd
+        working-directory: ${{ github.workspace }}
 
       - name: Upload exe
         uses: actions/upload-artifact@v4
         with:
           name: BrotherScanCenter-Windows
           path: dist\BrotherScanCenter.exe
-          if-no-files-found: warn
+          if-no-files-found: error
           retention-days: 30
