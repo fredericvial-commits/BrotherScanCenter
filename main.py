@@ -1,13 +1,18 @@
 import sys
 import os
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 
 def main():
     if sys.version_info < (3, 8):
         import ctypes
-        ctypes.windll.user32.MessageBoxW(0,
+        ctypes.windll.user32.MessageBoxW(
+            0,
             "Python 3.8 minimum requis.\npython.org",
-            "Erreur", 0x10)
+            "Erreur",
+            0x10
+        )
         sys.exit(1)
 
     from bootstrap import SplashScreen
@@ -30,10 +35,11 @@ def main():
 
     from ui.main_window import BrotherScanCenter
     from ui.tray import TrayApp
-    app  = BrotherScanCenter(cfg)
+    app = BrotherScanCenter(cfg)
     tray = TrayApp(app)
     tray.demarrer()
     app.mainloop()
+
 
 if __name__ == "__main__":
     main()
