@@ -18,6 +18,29 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Installer dependances
+        run: |
+          python -m pip install --upgrade pip
+          pip install Pillow pyinstaller cryptography watchdog pystray pywin32 requests psutil packaging
+        shell: cmd
+
+      - name: Valider syntaxe Python
+        run: |
+          echo "Validation syntaxe..."
+          python -m py_compile main.py && echo OK main.py || echo ERREUR main.py
+          python -m py_compile bootstrap.py && echo OK bootstrap.py || echo ERREUR bootstrap.py
+          python -m py_compile config_manager.py && echo OK config_manager.py || echo ERREUR config_manager.py
+          python -m py_compile generate_icon.py && echo OK generate_icon.py || echo ERREUR generate_icon.py
+          python -m py_compile core\scanner.py && echo OK core\scanner.py || echo ERREUR core\scanner.py
+          python -m py_compile core\email_sender.py && echo OK core\email_sender.py || echo ERREUR core\email_sender.py
+          python -m py_compile core\file_watcher.py && echo OK core\file_watcher.py || echo ERREUR core\file_watcher.py
+          python -m py_compile core\network_discovery.py && echo OK core\network_discovery.py || echo ERREUR core\network_discovery.py
+          python -m py_compile ui\main_window.py && echo OK ui\main_window.py || echo ERREUR ui\main_window.py
+          python -m py_compile ui\setup_wizard_ui.py && echo OK ui\setup_wizard_ui.py || echo ERREUR ui\setup_wizard_ui.py
+          python -m py_compile ui\tray.py && echo OK ui\tray.py || echo ERREUR ui\tray.py
+        shell: cmd
+        working-directory: ${{ github.workspace }}
+
       - name: Verifier fichiers
         run: |
           echo "=== FICHIERS ==="
@@ -35,12 +58,6 @@ jobs:
           if exist "assets\icon.ico" (echo OK assets\icon.ico) else (echo MANQUANT assets\icon.ico)
         shell: cmd
         working-directory: ${{ github.workspace }}
-
-      - name: Installer dependances
-        run: |
-          python -m pip install --upgrade pip
-          pip install Pillow pyinstaller cryptography watchdog pystray pywin32 requests psutil packaging
-        shell: cmd
 
       - name: Compiler
         run: |
