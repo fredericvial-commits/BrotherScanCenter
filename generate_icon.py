@@ -22,6 +22,7 @@ def creer_icone():
         py = taille // 3
         pw = taille - 2 * px
         ph = taille // 3
+
         draw.rounded_rectangle(
             [px, py, px + pw, py + ph],
             radius=taille // 12,
@@ -39,10 +40,12 @@ def creer_icone():
 
         led_r = max(2, taille // 16)
         draw.ellipse(
-            [px + pw - led_r * 3,
-             py + taille // 20,
-             px + pw - led_r,
-             py + taille // 20 + led_r * 2],
+            [
+                px + pw - led_r * 3,
+                py + taille // 20,
+                px + pw - led_r,
+                py + taille // 20 + led_r * 2
+            ],
             fill=(0, 200, 80, 255)
         )
 
@@ -53,3 +56,28 @@ def creer_icone():
                         "arial.ttf", taille // 4
                     )
                 except Exception:
+                    font = ImageFont.load_default()
+                draw.text(
+                    (px + pw // 2, py + ph // 2),
+                    "B",
+                    fill=(0, 48, 135, 255),
+                    font=font,
+                    anchor="mm"
+                )
+            except Exception:
+                font = ImageFont.load_default()
+
+        images.append(img)
+
+    images[0].save(
+        "assets/icon.ico",
+        format="ICO",
+        sizes=[(t, t) for t in tailles],
+        append_images=images[1:]
+    )
+    images[-1].save("assets/icon_preview.png")
+    print("icone creee")
+
+
+if __name__ == "__main__":
+    creer_icone()
