@@ -1,0 +1,62 @@
+name: Build BrotherScanCenter EXE
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Installer dependances
+        run: |
+          python -m pip install --upgrade pip
+          pip install Pillow pyinstaller cryptography watchdog pystray pywin32 requests psutil packaging
+
+      - name: Afficher structure
+        run: |
+          Get-ChildItem -Recurse -Depth 2
+        shell: pwsh
+
+      - name: Trouver et se placer dans le bon dossier
+        run: |
+          if (Test-Path "BrotherScanCenter\generate_icon.py") {
+            Set-Location "BrotherScanCenter"
+          }
+          python generate_icon.py
+          pyinstaller `
+            --onefile `
+            --windowed `
+            --name=BrotherScanCenter `
+            --icon=assets/icon.ico `
+            --add-data="assets;assets" `
+            --hidden-import=win32api `
+            --hidden-import=win32con `
+            --hidden-import=win32gui `
+            --hidden-import=pystray `
+            --hidden-import=PIL._tkinter_finder `
+            --hidden-import=cryptography `
+            --hidden-import=watchdog.observers.winapi `
+            --collect-all=pystray `
+            --collect-all=cryptography `
+            main.py
+        shell: pwsh
+
+      - name: Telecharger exe
+        uses: actions/upload-artifact@v4
+        with:
+          name: BrotherScanCenter-Windows
+          path: |
+            dist/BrotherScanCenter.exe
+            BrotherScanCenter/dist/BrotherScanCenter.exe
+          retention-days: 30
