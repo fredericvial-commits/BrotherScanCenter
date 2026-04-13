@@ -1,5 +1,6 @@
 import sys
 import os
+import subprocess
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -26,8 +27,50 @@ def creer_raccourci():
                 )
             lnk.Description = "Brother Scan Center - DCP-9020CDW"
             lnk.save()
-    except Exception as e:
+    except Exception:
         pass
+
+
+def connecter_nas(cfg):
+    """Connecte automatiquement le NAS au démarrage."""
+    try:
+        ip = cfg.get("nas", "ip") or ""
+        partage = cfg.get("nas", "partage") or "Scans_Brother"
+        user = cfg.get("nas", "user") or ""
+        password = cfg.get("nas", "password") or ""
+
+        if not ip or not user:
+            return
+
+        chemin = f"\\\\{ip}\\{partage}"
+
+        # Déconnecter d'abord si déjà connecté
+        subprocess.run(
+            f'net use "{chemin}" /delete /y',
+            shell=True,
+            capture_output=True
+        )
+
+        # Reconnecter avec les bons identifiants
+        r = subprocess.run(
+            f'net use "{chemin}" /user:{user} {password} /persistent:yes',
+            shell=True,
+            capture_output=True,
+            text=True
+        )
+
+        if r.returncode == 0:
+            print(f"NAS connecte : {chemin}")
+        else:
+            print(f"Erreur connexion NAS : {r.stderr}")
+
+        # Connecter aussi le dossier archives
+        archive = cfg.get("storage", "archive_folder") or ""
+        if archive and not os.path.exists(archive):
+            os.makedirs(archive, exist_ok=True)
+
+    except Exception as e:
+        print(f"Exception connexion NAS : {e}")
 
 
 def main():
@@ -60,6 +103,9 @@ def main():
             sys.exit(0)
         cfg.set(False, "app", "first_run")
         cfg.sauvegarder(cfg.config)
+
+    # Connexion automatique au NAS
+    connecter_nas(cfg)
 
     from ui.main_window import BrotherScanCenter
     from ui.tray import TrayApp
