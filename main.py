@@ -4,6 +4,32 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 
+def creer_raccourci():
+    """Crée un raccourci sur le Bureau au premier lancement."""
+    try:
+        import win32com.client
+        bureau = os.path.join(os.path.expanduser("~"), "Desktop")
+        raccourci = os.path.join(bureau, "Brother Scan Center.lnk")
+        if not os.path.exists(raccourci):
+            shell = win32com.client.Dispatch("WScript.Shell")
+            lnk = shell.CreateShortcut(raccourci)
+            if getattr(sys, 'frozen', False):
+                lnk.TargetPath = sys.executable
+                lnk.WorkingDirectory = os.path.dirname(
+                    sys.executable
+                )
+            else:
+                lnk.TargetPath = sys.executable
+                lnk.Arguments = os.path.abspath(__file__)
+                lnk.WorkingDirectory = os.path.dirname(
+                    os.path.abspath(__file__)
+                )
+            lnk.Description = "Brother Scan Center - DCP-9020CDW"
+            lnk.save()
+    except Exception as e:
+        pass
+
+
 def main():
     if sys.version_info < (3, 8):
         import ctypes
@@ -14,6 +40,8 @@ def main():
             0x10
         )
         sys.exit(1)
+
+    creer_raccourci()
 
     from bootstrap import SplashScreen
     splash = SplashScreen()
